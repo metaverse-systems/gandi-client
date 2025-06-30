@@ -33,7 +33,7 @@ class GandiClient
     public function getDomains(): array
     {
         try {
-            $response = $this->httpClient->get('/domains');
+            $response = $this->httpClient->get('/domain/domains');
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
             throw new \Exception('Failed to fetch domains: ' . $e->getMessage());
@@ -46,7 +46,7 @@ class GandiClient
     public function getDomain(string $domain): array
     {
         try {
-            $response = $this->httpClient->get("/domains/{$domain}");
+            $response = $this->httpClient->get("/domain/domains/{$domain}");
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
             throw new \Exception("Failed to fetch domain {$domain}: " . $e->getMessage());
@@ -59,7 +59,7 @@ class GandiClient
     public function getDnsRecords(string $domain): array
     {
         try {
-            $response = $this->httpClient->get("/domains/{$domain}/records");
+            $response = $this->httpClient->get("/livedns/domains/{$domain}/records");
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
             throw new \Exception("Failed to fetch DNS records for {$domain}: " . $e->getMessage());
@@ -72,7 +72,7 @@ class GandiClient
     public function createDnsRecord(string $domain, array $record): array
     {
         try {
-            $response = $this->httpClient->post("/domains/{$domain}/records", [
+            $response = $this->httpClient->post("/livedns/domains/{$domain}/records", [
                 'json' => $record
             ]);
             return json_decode($response->getBody()->getContents(), true);
@@ -84,28 +84,110 @@ class GandiClient
     /**
      * Update a DNS record
      */
-    public function updateDnsRecord(string $domain, string $recordId, array $record): array
+    public function updateDnsRecord(string $domain, string $recordName, string $recordType, array $record): array
     {
         try {
-            $response = $this->httpClient->put("/domains/{$domain}/records/{$recordId}", [
+            $response = $this->httpClient->put("/livedns/domains/{$domain}/records/{$recordName}/{$recordType}", [
                 'json' => $record
             ]);
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
-            throw new \Exception("Failed to update DNS record {$recordId} for {$domain}: " . $e->getMessage());
+            throw new \Exception("Failed to update DNS record {$recordName}/{$recordType} for {$domain}: " . $e->getMessage());
         }
     }
 
     /**
      * Delete a DNS record
      */
-    public function deleteDnsRecord(string $domain, string $recordId): bool
+    public function deleteDnsRecord(string $domain, string $recordName, string $recordType): bool
     {
         try {
-            $this->httpClient->delete("/domains/{$domain}/records/{$recordId}");
+            $this->httpClient->delete("/livedns/domains/{$domain}/records/{$recordName}/{$recordType}");
             return true;
         } catch (GuzzleException $e) {
-            throw new \Exception("Failed to delete DNS record {$recordId} for {$domain}: " . $e->getMessage());
+            throw new \Exception("Failed to delete DNS record {$recordName}/{$recordType} for {$domain}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get a specific DNS record by name and type
+     */
+    public function getDnsRecord(string $domain, string $recordName, string $recordType): array
+    {
+        try {
+            $response = $this->httpClient->get("/livedns/domains/{$domain}/records/{$recordName}/{$recordType}");
+            return json_decode($response->getBody()->getContents(), true);
+        } catch (GuzzleException $e) {
+            throw new \Exception("Failed to fetch DNS record {$recordName}/{$recordType} for {$domain}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get all DNS records for a specific name
+     */
+    public function getDnsRecordsByName(string $domain, string $recordName): array
+    {
+        try {
+            $response = $this->httpClient->get("/livedns/domains/{$domain}/records/{$recordName}");
+            return json_decode($response->getBody()->getContents(), true);
+        } catch (GuzzleException $e) {
+            throw new \Exception("Failed to fetch DNS records for {$recordName} on {$domain}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get domains managed by LiveDNS
+     */
+    public function getLiveDnsDomains(): array
+    {
+        try {
+            $response = $this->httpClient->get('/livedns/domains');
+            return json_decode($response->getBody()->getContents(), true);
+        } catch (GuzzleException $e) {
+            throw new \Exception('Failed to fetch LiveDNS domains: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Add a domain to LiveDNS
+     */
+    public function addDomainToLiveDns(string $domain): array
+    {
+        try {
+            $response = $this->httpClient->post('/livedns/domains', [
+                'json' => ['fqdn' => $domain]
+            ]);
+            return json_decode($response->getBody()->getContents(), true);
+        } catch (GuzzleException $e) {
+            throw new \Exception("Failed to add domain {$domain} to LiveDNS: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get domain's nameservers
+     */
+    public function getDomainNameservers(string $domain): array
+    {
+        try {
+            $response = $this->httpClient->get("/domain/domains/{$domain}/nameservers");
+            return json_decode($response->getBody()->getContents(), true);
+        } catch (GuzzleException $e) {
+            throw new \Exception("Failed to fetch nameservers for {$domain}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update domain's nameservers
+     */
+    public function updateDomainNameservers(string $domain, array $nameservers): array
+    {
+        try {
+            $response = $this->httpClient->put("/domain/domains/{$domain}/nameservers", [
+                'json' => ['nameservers' => $nameservers]
+            ]);
+            return json_decode($response->getBody()->getContents(), true);
+        } catch (GuzzleException $e) {
+            throw new \Exception("Failed to update nameservers for {$domain}: " . $e->getMessage());
         }
     }
 }
