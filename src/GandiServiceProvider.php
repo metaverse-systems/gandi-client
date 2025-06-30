@@ -15,7 +15,7 @@ class GandiServiceProvider extends ServiceProvider
             $config = $app['config']['gandi'] ?? [];
             
             return new GandiClient(
-                $config['api_key'] ?? env('GANDI_API_KEY'),
+                $config['personal_access_token'] ?? env('GANDI_PERSONAL_ACCESS_TOKEN'),
                 $config['base_url'] ?? env('GANDI_BASE_URL', 'https://api.gandi.net/v5')
             );
         });

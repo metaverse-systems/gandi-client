@@ -6,12 +6,13 @@ return [
     | Gandi API Configuration
     |--------------------------------------------------------------------------
     |
-    | Configuration for the Gandi API client. You can obtain your API key
-    | from your Gandi account dashboard.
+    | Configuration for the Gandi API client. You can obtain your Personal
+    | Access Token from your Gandi account dashboard at:
+    | https://admin.gandi.net/organizations/account/pat
     |
     */
 
-    'api_key' => env('GANDI_API_KEY'),
+    'personal_access_token' => env('GANDI_PERSONAL_ACCESS_TOKEN'),
 
     'base_url' => env('GANDI_BASE_URL', 'https://api.gandi.net/v5'),
 

@@ -14,12 +14,14 @@ composer require metaverse-systems/gandi-client
 
 ### Environment Variables
 
-Add your Gandi API key to your `.env` file:
+Add your Gandi Personal Access Token to your `.env` file:
 
 ```env
-GANDI_API_KEY=your_gandi_api_key_here
+GANDI_PERSONAL_ACCESS_TOKEN=your_gandi_personal_access_token_here
 GANDI_BASE_URL=https://api.gandi.net/v5
 ```
+
+You can create a Personal Access Token in your [Gandi Admin dashboard](https://admin.gandi.net/organizations/account/pat).
 
 ### Publish Configuration (Optional)
 
@@ -101,7 +103,7 @@ class DomainController extends Controller
 
 The following configuration options are available in `config/gandi.php`:
 
-- `api_key` - Your Gandi API key
+- `personal_access_token` - Your Gandi Personal Access Token
 - `base_url` - The Gandi API base URL (default: https://api.gandi.net/v5)
 - `timeout` - Request timeout in seconds (default: 30)
 - `verify_ssl` - Whether to verify SSL certificates (default: true)
