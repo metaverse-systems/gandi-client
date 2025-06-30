@@ -14,7 +14,7 @@ return [
 
     'personal_access_token' => env('GANDI_PERSONAL_ACCESS_TOKEN'),
 
-    'base_url' => env('GANDI_BASE_URL', 'https://api.gandi.net/v5'),
+    'base_url' => env('GANDI_BASE_URL', 'https://api.gandi.net'),
 
     /*
     |--------------------------------------------------------------------------

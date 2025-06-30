@@ -11,7 +11,7 @@ class GandiClient
     private string $personalAccessToken;
     private string $baseUrl;
 
-    public function __construct(string $personalAccessToken, string $baseUrl = 'https://api.gandi.net/v5')
+    public function __construct(string $personalAccessToken, string $baseUrl = 'https://api.gandi.net')
     {
         $this->personalAccessToken = $personalAccessToken;
         $this->baseUrl = rtrim($baseUrl, '/');
@@ -33,7 +33,7 @@ class GandiClient
     public function getDomains(): array
     {
         try {
-            $response = $this->httpClient->get('/domain/domains');
+            $response = $this->httpClient->get('/v5/domain/domains');
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
             throw new \Exception('Failed to fetch domains: ' . $e->getMessage());
@@ -46,7 +46,7 @@ class GandiClient
     public function getDomain(string $domain): array
     {
         try {
-            $response = $this->httpClient->get("/domain/domains/{$domain}");
+            $response = $this->httpClient->get("/v5/domain/domains/{$domain}");
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
             throw new \Exception("Failed to fetch domain {$domain}: " . $e->getMessage());
@@ -59,9 +59,12 @@ class GandiClient
     public function getDnsRecords(string $domain): array
     {
         try {
-            $response = $this->httpClient->get("/livedns/domains/{$domain}/records");
+            $response = $this->httpClient->get("/v5/livedns/domains/{$domain}/records");
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
+            if ($e->getResponse() && $e->getResponse()->getStatusCode() === 404) {
+                throw new \Exception("Domain '{$domain}' not found in LiveDNS. The domain might not be managed by LiveDNS yet. Try using getDomainLiveDnsStatus() to check the status or enableLiveDnsForDomain() to enable LiveDNS management.");
+            }
             throw new \Exception("Failed to fetch DNS records for {$domain}: " . $e->getMessage());
         }
     }
@@ -72,7 +75,7 @@ class GandiClient
     public function createDnsRecord(string $domain, array $record): array
     {
         try {
-            $response = $this->httpClient->post("/livedns/domains/{$domain}/records", [
+            $response = $this->httpClient->post("/v5/livedns/domains/{$domain}/records", [
                 'json' => $record
             ]);
             return json_decode($response->getBody()->getContents(), true);
@@ -87,7 +90,7 @@ class GandiClient
     public function updateDnsRecord(string $domain, string $recordName, string $recordType, array $record): array
     {
         try {
-            $response = $this->httpClient->put("/livedns/domains/{$domain}/records/{$recordName}/{$recordType}", [
+            $response = $this->httpClient->put("/v5/livedns/domains/{$domain}/records/{$recordName}/{$recordType}", [
                 'json' => $record
             ]);
             return json_decode($response->getBody()->getContents(), true);
@@ -102,7 +105,7 @@ class GandiClient
     public function deleteDnsRecord(string $domain, string $recordName, string $recordType): bool
     {
         try {
-            $this->httpClient->delete("/livedns/domains/{$domain}/records/{$recordName}/{$recordType}");
+            $this->httpClient->delete("/v5/livedns/domains/{$domain}/records/{$recordName}/{$recordType}");
             return true;
         } catch (GuzzleException $e) {
             throw new \Exception("Failed to delete DNS record {$recordName}/{$recordType} for {$domain}: " . $e->getMessage());
@@ -115,7 +118,7 @@ class GandiClient
     public function getDnsRecord(string $domain, string $recordName, string $recordType): array
     {
         try {
-            $response = $this->httpClient->get("/livedns/domains/{$domain}/records/{$recordName}/{$recordType}");
+            $response = $this->httpClient->get("/v5/livedns/domains/{$domain}/records/{$recordName}/{$recordType}");
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
             throw new \Exception("Failed to fetch DNS record {$recordName}/{$recordType} for {$domain}: " . $e->getMessage());
@@ -128,7 +131,7 @@ class GandiClient
     public function getDnsRecordsByName(string $domain, string $recordName): array
     {
         try {
-            $response = $this->httpClient->get("/livedns/domains/{$domain}/records/{$recordName}");
+            $response = $this->httpClient->get("/v5/livedns/domains/{$domain}/records/{$recordName}");
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
             throw new \Exception("Failed to fetch DNS records for {$recordName} on {$domain}: " . $e->getMessage());
@@ -141,7 +144,7 @@ class GandiClient
     public function getLiveDnsDomains(): array
     {
         try {
-            $response = $this->httpClient->get('/livedns/domains');
+            $response = $this->httpClient->get('/v5/livedns/domains');
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
             throw new \Exception('Failed to fetch LiveDNS domains: ' . $e->getMessage());
@@ -154,7 +157,7 @@ class GandiClient
     public function addDomainToLiveDns(string $domain): array
     {
         try {
-            $response = $this->httpClient->post('/livedns/domains', [
+            $response = $this->httpClient->post('/v5/livedns/domains', [
                 'json' => ['fqdn' => $domain]
             ]);
             return json_decode($response->getBody()->getContents(), true);
@@ -169,7 +172,7 @@ class GandiClient
     public function getDomainNameservers(string $domain): array
     {
         try {
-            $response = $this->httpClient->get("/domain/domains/{$domain}/nameservers");
+            $response = $this->httpClient->get("/v5/domain/domains/{$domain}/nameservers");
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
             throw new \Exception("Failed to fetch nameservers for {$domain}: " . $e->getMessage());
@@ -182,12 +185,67 @@ class GandiClient
     public function updateDomainNameservers(string $domain, array $nameservers): array
     {
         try {
-            $response = $this->httpClient->put("/domain/domains/{$domain}/nameservers", [
+            $response = $this->httpClient->put("/v5/domain/domains/{$domain}/nameservers", [
                 'json' => ['nameservers' => $nameservers]
             ]);
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
             throw new \Exception("Failed to update nameservers for {$domain}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Check if a domain is managed by LiveDNS
+     */
+    public function isDomainInLiveDns(string $domain): bool
+    {
+        try {
+            $response = $this->httpClient->get("/v5/livedns/domains/{$domain}");
+            return $response->getStatusCode() === 200;
+        } catch (GuzzleException $e) {
+            if ($e->getResponse() && $e->getResponse()->getStatusCode() === 404) {
+                return false;
+            }
+            throw new \Exception("Failed to check LiveDNS status for {$domain}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get LiveDNS information for a domain
+     */
+    public function getLiveDnsInfo(string $domain): array
+    {
+        try {
+            $response = $this->httpClient->get("/v5/livedns/domains/{$domain}");
+            return json_decode($response->getBody()->getContents(), true);
+        } catch (GuzzleException $e) {
+            throw new \Exception("Failed to fetch LiveDNS info for {$domain}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get LiveDNS status from the domain API
+     */
+    public function getDomainLiveDnsStatus(string $domain): array
+    {
+        try {
+            $response = $this->httpClient->get("/v5/domain/domains/{$domain}/livedns");
+            return json_decode($response->getBody()->getContents(), true);
+        } catch (GuzzleException $e) {
+            throw new \Exception("Failed to fetch domain LiveDNS status for {$domain}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Enable LiveDNS for a domain
+     */
+    public function enableLiveDnsForDomain(string $domain): array
+    {
+        try {
+            $response = $this->httpClient->post("/v5/domain/domains/{$domain}/livedns");
+            return json_decode($response->getBody()->getContents(), true);
+        } catch (GuzzleException $e) {
+            throw new \Exception("Failed to enable LiveDNS for {$domain}: " . $e->getMessage());
         }
     }
 }

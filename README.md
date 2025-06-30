@@ -18,7 +18,7 @@ Add your Gandi Personal Access Token to your `.env` file:
 
 ```env
 GANDI_PERSONAL_ACCESS_TOKEN=your_gandi_personal_access_token_here
-GANDI_BASE_URL=https://api.gandi.net/v5
+GANDI_BASE_URL=https://api.gandi.net
 ```
 
 You can create a Personal Access Token in your [Gandi Admin dashboard](https://admin.gandi.net/organizations/account/pat).
@@ -104,7 +104,7 @@ class DomainController extends Controller
 The following configuration options are available in `config/gandi.php`:
 
 - `personal_access_token` - Your Gandi Personal Access Token
-- `base_url` - The Gandi API base URL (default: https://api.gandi.net/v5)
+- `base_url` - The Gandi API base URL (default: https://api.gandi.net)
 - `timeout` - Request timeout in seconds (default: 30)
 - `verify_ssl` - Whether to verify SSL certificates (default: true)
 
